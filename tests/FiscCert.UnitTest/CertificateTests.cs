@@ -1,9 +1,91 @@
 ﻿using FiscCert.Domain;
+using Xunit;
 
-namespace FiscCert.UnitTest;
+namespace FiscCert.UnitTests;
 
 public class CertificateTests
 {
+
+    [Fact]
+    public void Constructor_ShouldCreateCertificate_WhenAllParametersAreValid()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var economicGroupId = Guid.NewGuid();
+        var expirationDate = DateTime.UtcNow.AddDays(365);
+
+        // Act
+        var cert = new Certificate(
+            tenantId,
+            "tenants/123/certs/file.pfx", 
+            "Test Company",               
+            "12.345.678/0001-90",         
+            "SERIE123456",                
+            expirationDate,
+            economicGroupId
+        );
+
+        // Assert
+        Assert.NotNull(cert);
+        Assert.Equal(tenantId, cert.TenantId);
+        Assert.Equal(economicGroupId, cert.EconomicGroupId);
+        Assert.Equal("SERIE123456", cert.SerialNumber);
+        Assert.False(cert.IsRevoked);
+    }
+
+    [Fact]
+    public void Constructor_ShouldCreateCertificate_WhenEconomicGroupIsNull()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+
+        // Act
+        var cert = new Certificate(
+            tenantId,
+            "path/to/file",
+            "Test Company",
+            "CPF123",
+            "SERIE123",
+            DateTime.UtcNow
+        );
+
+        // Assert
+        Assert.Null(cert.EconomicGroupId);
+    }
+
+    [Fact]
+    public void Constructor_ShouldThrowException_WhenBlobPathIsEmpty()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => new Certificate(
+            tenantId,
+            "",
+            "Company",
+            "CPF",
+            "SERIALNUMBER",
+            DateTime.UtcNow
+        ));
+    }
+
+    [Fact]
+    public void Constructor_ShouldThrowException_WhenSerialNumberIsEmpty()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => new Certificate(
+            tenantId,
+            "path/file",
+            "Empresa",
+            "CPF",
+            "",
+            DateTime.UtcNow
+        ));
+    }
 
     [Fact]
     public void IsValid_ShouldReturnTrue_WhenDateIsFutureAndNotRevoked()
@@ -11,10 +93,10 @@ public class CertificateTests
         // Arrange
         DateTime referenceDate = new(2026, 1, 1);
         DateTime expirationDate = new(2026, 1, 2);
-        Certificate certificate = new("Test Owner", "12345678000190", expirationDate);
+        var cert = new Certificate(Guid.NewGuid(), "path", "Name", "Doc", "Serial", expirationDate);
 
         // Act
-        bool isValid = certificate.IsValid(referenceDate);
+        var isValid = cert.IsValid(referenceDate);
 
         // Assert
         Assert.True(isValid);
@@ -26,28 +108,71 @@ public class CertificateTests
         // Arrange
         DateTime referenceDate = new(2026, 1, 3);
         DateTime expirationDate = new(2026, 1, 2);
-        Certificate certificate = new("Test Owner", "12345678000190", expirationDate);
-     
+
+        var cert = new Certificate(Guid.NewGuid(), "path", "Name", "Doc", "Serial", expirationDate);
+
         // Act
-        bool isValid = certificate.IsValid(referenceDate);
-        
+        var isValid = cert.IsValid(referenceDate);
+
         // Assert
         Assert.False(isValid);
     }
 
     [Fact]
-    public void IsValid_ShouldReturnFalse_WhenCertificateIsRevoked()
+    public void IsValid_ShouldReturnFalse_WhenRevoked()
     {
         // Arrange
         DateTime referenceDate = new(2026, 1, 1);
         DateTime expirationDate = new(2026, 1, 2);
-        Certificate certificate = new("Test Owner", "12345678000190", expirationDate);
-        certificate.Revoke();
-     
+        var cert = new Certificate(Guid.NewGuid(), "path", "Name", "Doc", "Serial", expirationDate);
+
         // Act
-        bool isValid = certificate.IsValid(referenceDate);
-        
+        cert.Revoke(); 
+        var isValid = cert.IsValid(referenceDate);
+
         // Assert
         Assert.False(isValid);
+    }
+
+    [Fact]
+    public void AssignToEconomicGroup_ShouldUpdateGroupId()
+    {
+        // Arrange
+        var cert = new Certificate(Guid.NewGuid(), "path", "Name", "Doc", "Serial", DateTime.UtcNow);
+        var newGroupId = Guid.NewGuid();
+
+        // Act
+        cert.AssignToEconomicGroup(newGroupId);
+
+        // Assert
+        Assert.Equal(newGroupId, cert.EconomicGroupId);
+    }
+
+    [Fact]
+    public void RemoveFromEconomicGroup_ShouldSetGroupIdToNull()
+    {
+        // Arrange
+        var groupId = Guid.NewGuid();
+        var cert = new Certificate(Guid.NewGuid(), "path", "Name", "Doc", "Serial", DateTime.UtcNow, groupId);
+
+        // Act
+        cert.RemoveFromEconomicGroup();
+
+        // Assert
+        Assert.Null(cert.EconomicGroupId);
+    }
+
+    [Fact]
+    public void AddRepresentedCompany_ShouldAddToCollection()
+    {
+        // Arrange
+        var cert = new Certificate(Guid.NewGuid(), "path", "Name", "Doc", "Serial", DateTime.UtcNow);
+
+        // Act
+        cert.AddRepresentedCompany("Filial 01", "CNPJ-Filial");
+
+        // Assert
+        Assert.Single(cert.RepresentedCompanies);
+        Assert.Contains(cert.RepresentedCompanies, c => c.CompanyName == "Filial 01");
     }
 }
