@@ -33,4 +33,28 @@ public class CertificateReaderTests
         Assert.Equal("12345678000199", result.FederalInscription);
         Assert.NotNull(result.SerialNumber);
     }
+
+    [Fact]
+    public async Task ExtractMetadataAsync_ShouldExtractData_UsingSerproPattern()
+    {
+        // Arrange
+        using var rsa = RSA.Create(2048);
+        var request = new CertificateRequest(
+            "CN=EMPRESA SERPRO LTDA, OU=29354084000143, O=ICP-Brasil",
+            rsa,
+            HashAlgorithmName.SHA256,
+            RSASignaturePadding.Pkcs1);
+
+        var cert = request.CreateSelfSigned(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddYears(1));
+        var password = "senha_teste";
+        var pfxBytes = cert.Export(X509ContentType.Pfx, password);
+        using var stream = new MemoryStream(pfxBytes);
+
+        // Act
+        var result = await _sut.ReadCertificateAsync(stream, password);
+
+        // Assert
+        Assert.Equal("EMPRESA SERPRO LTDA", result.OwnerName);
+        Assert.Equal("29354084000143", result.FederalInscription);
+    }
 }
