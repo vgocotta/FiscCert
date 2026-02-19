@@ -10,9 +10,4 @@
     <ProjectReference Include="..\FiscCert.Domain\FiscCert.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="DTO\" />
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>
