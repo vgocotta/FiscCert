@@ -16,6 +16,7 @@ public class CertificateTests
 
         // Act
         var cert = new Certificate(
+            Guid.NewGuid(),
             tenantId,
             "tenants/123/certs/file.pfx", 
             "Test Company",               
@@ -41,6 +42,7 @@ public class CertificateTests
 
         // Act
         var cert = new Certificate(
+            Guid.NewGuid(),
             tenantId,
             "path/to/file",
             "Test Company",
@@ -61,6 +63,7 @@ public class CertificateTests
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => new Certificate(
+            Guid.NewGuid(),
             tenantId,
             "",
             "Company",
@@ -78,6 +81,7 @@ public class CertificateTests
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => new Certificate(
+            Guid.NewGuid(),
             tenantId,
             "path/file",
             "Empresa",
@@ -93,7 +97,7 @@ public class CertificateTests
         // Arrange
         DateTime referenceDate = new(2026, 1, 1);
         DateTime expirationDate = new(2026, 1, 2);
-        var cert = new Certificate(Guid.NewGuid(), "path", "Name", "Doc", "Serial", expirationDate);
+        var cert = new Certificate(Guid.NewGuid(), Guid.NewGuid(), "path", "Name", "Doc", "Serial", expirationDate);
 
         // Act
         var isValid = cert.IsValid(referenceDate);
@@ -109,7 +113,7 @@ public class CertificateTests
         DateTime referenceDate = new(2026, 1, 3);
         DateTime expirationDate = new(2026, 1, 2);
 
-        var cert = new Certificate(Guid.NewGuid(), "path", "Name", "Doc", "Serial", expirationDate);
+        var cert = new Certificate(Guid.NewGuid(), Guid.NewGuid(), "path", "Name", "Doc", "Serial", expirationDate);
 
         // Act
         var isValid = cert.IsValid(referenceDate);
@@ -124,7 +128,7 @@ public class CertificateTests
         // Arrange
         DateTime referenceDate = new(2026, 1, 1);
         DateTime expirationDate = new(2026, 1, 2);
-        var cert = new Certificate(Guid.NewGuid(), "path", "Name", "Doc", "Serial", expirationDate);
+        var cert = new Certificate(Guid.NewGuid(), Guid.NewGuid(), "path", "Name", "Doc", "Serial", expirationDate);
 
         // Act
         cert.Revoke(); 
@@ -138,7 +142,7 @@ public class CertificateTests
     public void AssignToEconomicGroup_ShouldUpdateGroupId()
     {
         // Arrange
-        var cert = new Certificate(Guid.NewGuid(), "path", "Name", "Doc", "Serial", DateTime.UtcNow);
+        var cert = new Certificate(Guid.NewGuid(), Guid.NewGuid(), "path", "Name", "Doc", "Serial", DateTime.UtcNow);
         var newGroupId = Guid.NewGuid();
 
         // Act
@@ -153,7 +157,7 @@ public class CertificateTests
     {
         // Arrange
         var groupId = Guid.NewGuid();
-        var cert = new Certificate(Guid.NewGuid(), "path", "Name", "Doc", "Serial", DateTime.UtcNow, groupId);
+        var cert = new Certificate(Guid.NewGuid(), Guid.NewGuid(), "path", "Name", "Doc", "Serial", DateTime.UtcNow, groupId);
 
         // Act
         cert.RemoveFromEconomicGroup();
@@ -166,7 +170,7 @@ public class CertificateTests
     public void AddRepresentedCompany_ShouldAddToCollection()
     {
         // Arrange
-        var cert = new Certificate(Guid.NewGuid(), "path", "Name", "Doc", "Serial", DateTime.UtcNow);
+        var cert = new Certificate(Guid.NewGuid(), Guid.NewGuid(), "path", "Name", "Doc", "Serial", DateTime.UtcNow);
 
         // Act
         cert.AddRepresentedCompany("Filial 01", "CNPJ-Filial");
