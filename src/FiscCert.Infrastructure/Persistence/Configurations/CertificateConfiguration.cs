@@ -40,5 +40,7 @@ public class CertificateConfiguration : IEntityTypeConfiguration<Certificate>
 
         builder.Property(c => c.EconomicGroupId)
             .IsRequired(false);
+
+        builder.Ignore(c => c.RepresentedCompanies);
     }
 }

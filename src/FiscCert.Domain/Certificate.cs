@@ -22,6 +22,7 @@ public sealed class Certificate : Entity
     private Certificate() { }
 
     public Certificate(
+        Guid id,
         Guid tenantId,
         string blobPath,
         string ownerName,
@@ -36,7 +37,7 @@ public sealed class Certificate : Entity
         if (string.IsNullOrWhiteSpace(ownerName)) throw new ArgumentException("Owner Name is required");
         if (string.IsNullOrWhiteSpace(federalInscription)) throw new ArgumentException("Federal Inscription is required");
         if (string.IsNullOrWhiteSpace(serialNumber)) throw new ArgumentException("Serial Number is required");
-
+        Id = id;
         EconomicGroupId = economicGroupId;
         BlobPath = blobPath;
         OwnerName = ownerName;
