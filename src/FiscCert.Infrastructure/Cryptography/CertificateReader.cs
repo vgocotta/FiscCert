@@ -28,23 +28,42 @@ public class CertificateReader : ICertificateReader
         string ownerName = string.Empty;
         string federalInscription = string.Empty;
 
-        var match = Regex.Match(subject, @"CN=([^,]+)");
+        var cnMatch = Regex.Match(subject, @"CN=([^,]+)");
 
-        if (match.Success)
+        if (cnMatch.Success)
         {
-            var commonName = match.Groups[1].Value;
-
+            var commonName = cnMatch.Groups[1].Value;
             var partes = commonName.Split(':');
+
+            ownerName = partes[0].Trim();
 
             if (partes.Length >= 2)
             {
-                ownerName = partes[0].Trim();
+                var possivelInscricao = Regex.Replace(partes[1], "[^0-9]", "");
 
-                federalInscription = Regex.Replace(partes[1], "[^0-9]", "");
+                if (possivelInscricao.Length == 11 || possivelInscricao.Length == 14)
+                {
+                    federalInscription = possivelInscricao;
+                }
             }
-            else
+        }
+
+        if (string.IsNullOrWhiteSpace(federalInscription))
+        {
+            // Pega todas as ocorrências de OU=alguma_coisa
+            var ouMatches = Regex.Matches(subject, @"OU=([^,]+)");
+
+            foreach (Match match in ouMatches)
             {
-                ownerName = commonName;
+                var ouValue = match.Groups[1].Value.Trim();
+
+                var possivelInscricao = Regex.Replace(ouValue, "[^0-9]", "");
+
+                if (possivelInscricao.Length == 11 || possivelInscricao.Length == 14)
+                {
+                    federalInscription = possivelInscricao;
+                    break;
+                }
             }
         }
 
