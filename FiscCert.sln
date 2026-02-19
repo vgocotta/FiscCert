@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiscCert.UnitTest", "tests\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiscCert.Application", "src\FiscCert.Application\FiscCert.Application.csproj", "{4D960974-300D-4850-9282-C0B69008863B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiscCert.Application.UnitTests", "tests\FiscCert.Application.UnitTests\FiscCert.Application.UnitTests.csproj", "{2A54A9CB-65C3-4D70-B81F-9CE548F27354}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{4D960974-300D-4850-9282-C0B69008863B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D960974-300D-4850-9282-C0B69008863B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D960974-300D-4850-9282-C0B69008863B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A54A9CB-65C3-4D70-B81F-9CE548F27354}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A54A9CB-65C3-4D70-B81F-9CE548F27354}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A54A9CB-65C3-4D70-B81F-9CE548F27354}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A54A9CB-65C3-4D70-B81F-9CE548F27354}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -39,6 +45,7 @@ Global
 		{81DEA3EA-DCEB-422D-9B91-75D28DCDC871} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{5788EEFF-6142-4BE7-911E-29F0B4B2C8A9} = {8DA2229C-5753-4B0D-AAB7-C45C83C50DA1}
 		{4D960974-300D-4850-9282-C0B69008863B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{2A54A9CB-65C3-4D70-B81F-9CE548F27354} = {8DA2229C-5753-4B0D-AAB7-C45C83C50DA1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {69F0F767-029E-483F-BC68-C254C43A6DE1}

@@ -1,4 +1,5 @@
 ﻿using FiscCert.Application.Abstractions;
+using FiscCert.Application.Constants;
 using FiscCert.Application.DTO;
 using FiscCert.Application.Exceptions;
 using FiscCert.Domain;
@@ -29,7 +30,7 @@ public class CertificateService : ICertificateService
         }
         catch (CryptographicException ex)
         {
-            throw new InvalidCertificatePasswordException("Failed to extract certificate metadata.", ex);
+            throw new InvalidCertificatePasswordException(ErrorMessages.InvalidCertificatePassword, ex);
         }
         var certificateId = Guid.NewGuid();
         var blobName = $"{input.TenantId}/{certificateId}.pfx";
