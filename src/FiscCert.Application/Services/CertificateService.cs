@@ -35,7 +35,7 @@ public class CertificateService : ICertificateService
         var certificateId = Guid.NewGuid();
         var blobName = $"{input.TenantId}/{certificateId}.pfx";
 
-        Certificate certificate = new(input.TenantId, blobName, metadata.OwnerName, metadata.FederalInscription, metadata.SerialNumber, metadata.ExpirationDate);
+        Certificate certificate = new(input.TenantId, blobName, metadata.OwnerName, metadata.FederalInscription, metadata.SerialNumber, metadata.ExpirationDate, input.EconomicGroupId);
 
         if (input.FileStream.CanSeek)
         {

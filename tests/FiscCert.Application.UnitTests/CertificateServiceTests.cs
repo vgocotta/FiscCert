@@ -5,12 +5,7 @@ using FiscCert.Application.Exceptions;
 using FiscCert.Application.Services;
 using FiscCert.Domain;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FiscCert.Application.UnitTests;
 
