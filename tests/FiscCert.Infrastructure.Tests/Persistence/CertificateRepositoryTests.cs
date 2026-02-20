@@ -26,6 +26,7 @@ public class CertificateRepositoryTests
         // Arrange
         var certificate = new Certificate(
             Guid.NewGuid(),
+            Guid.NewGuid(),
             "tenant/123.pfx",
             "EMPRESA TESTE",
             "12345678000199",

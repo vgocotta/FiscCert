@@ -2,9 +2,9 @@
 
 public abstract class Entity
 {
-    public Guid Id { get; private set; }
+    public Guid Id { get; protected set; }
     public DateTime CreatedAt { get; private set; }
-    public Guid TenantId { get; set; }
+    public Guid TenantId { get; protected set; }
 
     protected Entity() { }
     protected Entity(Guid tenantId)
