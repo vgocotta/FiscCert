@@ -1,0 +1,101 @@
+﻿@page "/upload"
+@inject HttpClient Http
+
+<PageTitle>Upload de Certificado</PageTitle>
+
+<h3>Upload de Certificado Digital (.pfx)</h3>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="form-label">Arquivo do Certificado:</label>
+            <InputFile OnChange="LoadFile" class="form-control" accept=".pfx" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Senha:</label>
+            <input type="password" @bind="Password" class="form-control" placeholder="Digite a senha do certificado" />
+        </div>
+
+        <button class="btn btn-primary" @onclick="SubmitForm" disabled="@IsLoading">
+            @if (IsLoading)
+            {
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                <span> Processando...</span>
+            }
+            else
+            {
+                <span>Enviar Certificado</span>
+            }
+        </button>
+
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <div class="alert alert-info mt-3">@Message</div>
+        }
+    </div>
+</div>
+
+@code {
+    private IBrowserFile? selectedFile;
+    private string Password = string.Empty;
+    private string Message = string.Empty;
+    private bool IsLoading = false;
+
+    private void LoadFile(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        Message = string.Empty; // Limpa a mensagem se escolher outro arquivo
+    }
+
+    private async Task SubmitForm()
+    {
+        if (selectedFile == null || string.IsNullOrWhiteSpace(Password))
+        {
+            Message = "Por favor, selecione o arquivo e informe a senha.";
+            return;
+        }
+
+        IsLoading = true;
+        Message = string.Empty;
+
+        try
+        {
+            using var content = new MultipartFormDataContent();
+
+            // Blazor tem um limite de segurança de 512kb para upload.
+            // Aumentamos para 2MB porque alguns PFX podem ser grandes.
+            var maxAllowedSize = 2 * 1024 * 1024;
+            var stream = selectedFile.OpenReadStream(maxAllowedSize);
+            var streamContent = new StreamContent(stream);
+
+            // Montando as chaves exatamente como a nossa API espera
+            content.Add(streamContent, "File", selectedFile.Name);
+            content.Add(new StringContent(Password), "Password");
+            content.Add(new StringContent("3fa85f64-5717-4562-b3fc-2c963f66afa6"), "TenantId"); // Tenant fake por enquanto
+
+            var response = await Http.PostAsync("/api/Certificates/upload", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Message = "✅ Certificado lido e salvo com sucesso!";
+                Password = string.Empty; // Limpa a senha por segurança
+                selectedFile = null;
+            }
+            else
+            {
+                var errorResponse = await response.Content.ReadAsStringAsync();
+                Message = $"❌ Erro ao enviar: {errorResponse}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Message = $"❌ Erro inesperado: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+}

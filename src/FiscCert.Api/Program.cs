@@ -18,7 +18,7 @@ builder.Services.AddScoped<ICertificateService, CertificateService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazor", policy =>
-        policy.WithOrigins("https://localhost:sua_porta_do_blazor_aqui")
+        policy.WithOrigins("https://localhost:7164")
               .AllowAnyMethod()
               .AllowAnyHeader());
 });
@@ -33,6 +33,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowBlazor");
 
 app.UseAuthorization();
 
