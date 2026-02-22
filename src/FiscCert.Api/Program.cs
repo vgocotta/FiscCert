@@ -1,6 +1,7 @@
 using FiscCert.Application.Abstractions;
 using FiscCert.Application.Services;
 using FiscCert.Infrastructure;
+using FiscCert.Infrastructure.Security;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddScoped<ICertificateService, CertificateService>();
+
+builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 
 builder.Services.AddCors(options =>
 {
