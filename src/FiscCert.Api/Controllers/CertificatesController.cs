@@ -69,10 +69,20 @@ public class CertificatesController : ControllerBase
         }
     }
 
+    [HttpPatch("{id:guid}/revoke")]
+    public async Task<IActionResult> Revoke([FromRoute] Guid id, [FromQuery] Guid tenantId, CancellationToken cancellationToken)
+    {
+        if (tenantId == Guid.Empty) return BadRequest(new { Error = "Usuário é obrigatório." });
+
+        await _certificateService.RevokeCertificateAsync(id, tenantId, cancellationToken);
+
+        return NoContent();
+    }
+
     [HttpGet("{id:guid}/download")]
     public async Task<IActionResult> Download([FromRoute] Guid id, [FromQuery] Guid tenantId, CancellationToken cancellationToken)
     {
-        if (tenantId == Guid.Empty) return BadRequest(new { Error = "TenantId obrigatório." });
+        if (tenantId == Guid.Empty) return BadRequest(new { Error = "Usuário é obrigatório." });
 
         try
         {
@@ -89,7 +99,7 @@ public class CertificatesController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id, [FromQuery] Guid tenantId, CancellationToken cancellationToken)
     {
-        if (tenantId == Guid.Empty) return BadRequest(new { Error = "TenantId obrigatório." });
+        if (tenantId == Guid.Empty) return BadRequest(new { Error = "Usuário é obrigatório." });
 
         await _certificateService.DeleteCertificateAsync(id, tenantId, cancellationToken);
 

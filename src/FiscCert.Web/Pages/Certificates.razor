@@ -86,9 +86,17 @@ else
                                 <i class="bi bi-download fs-5"></i>
                             </button>
 
-                            <button class="btn btn-sm text-danger p-0 border-0 bg-transparent" @onclick="() => DeleteCertificate(cert.Id)" title="Excluir Certificado">
+                            <button class="btn btn-sm text-danger p-0 border-0 bg-transparent  me-3" @onclick="() => DeleteCertificate(cert.Id)" title="Excluir Certificado">
                                 <i class="bi bi-trash-fill fs-5"></i>
                             </button>
+
+
+                            @if (!cert.IsRevoked)
+                            {
+                                <button class="btn btn-sm text-warning p-0 border-0 bg-transparent" @onclick="() => RevokeCertificate(cert.Id)" title="Revogar Certificado">
+                                    <i class="bi bi-slash-circle-fill fs-5"></i>
+                                </button>
+                            }
                         </td>
                     </tr>
                 }
@@ -178,6 +186,31 @@ else
         Nav.NavigateTo(url, forceLoad: true);
     }
 
+    private async Task RevokeCertificate(Guid id)
+    {
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", "Deseja realmente revogar este certificado? Ele não poderá ser usado para novas assinaturas.");
+        if (!confirmed) return;
+
+        try
+        {
+            var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"/api/certificates/{id}/revoke?tenantId={tenantId}");
+            var response = await Http.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadCertificates();
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Erro ao revogar o certificado.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao revogar: {ex.Message}");
+        }
+    }
+
     private async Task DeleteCertificate(Guid id)
     {
         bool confirmed = await JS.InvokeAsync<bool>("confirm", "Tem a certeza que deseja excluir este certificado permanentemente? Esta ação não pode ser desfeita.");
@@ -188,7 +221,7 @@ else
             var response = await Http.DeleteAsync($"/api/certificates/{id}?tenantId={tenantId}");
             if (response.IsSuccessStatusCode)
             {
-                certificates?.RemoveAll(c => c.Id == id);
+                await LoadCertificates();
             }
             else
             {

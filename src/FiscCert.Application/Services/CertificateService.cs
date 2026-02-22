@@ -90,6 +90,20 @@ public class CertificateService : ICertificateService
         return _encryptionService.Decrypt(certificate.EncryptedPassword);
     }
 
+    public async Task RevokeCertificateAsync(Guid id, Guid tenantId, CancellationToken cancellationToken)
+    {
+        var certificate = await _repository.GetByIdAsync(id, cancellationToken);
+
+        if (certificate == null || certificate.TenantId != tenantId)
+        {
+            throw new Exception("Certificado não encontrado ou acesso negado.");
+        }
+
+        certificate.Revoke();
+
+        await _repository.UpdateAsync(certificate, cancellationToken);
+    }
+
     public async Task DeleteCertificateAsync(Guid id, Guid tenantId, CancellationToken cancellationToken)
     {
         var certificate = await _repository.GetByIdAsync(id, cancellationToken);
