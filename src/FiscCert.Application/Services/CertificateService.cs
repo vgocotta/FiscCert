@@ -20,6 +20,22 @@ public class CertificateService : ICertificateService
         _certificateReader = certificateReader;
     }
 
+    public async Task<IEnumerable<CertificateDto>> GetCertificatesAsync(Guid tenantId, CancellationToken cancellationToken)
+    {
+        var certificates = await _repository.GetAllByTenantAsync(tenantId, cancellationToken);
+
+        var dtos = certificates.Select(c => new CertificateDto
+        (
+            c.Id,
+            c.OwnerName,
+            c.FederalInscription,
+            c.ExpirationDate,
+            c.IsRevoked
+        ));
+
+        return dtos;
+    }
+
     public async Task<Guid> UploadCertificateAsync(UploadCertificateDto input, CancellationToken cancellationToken = default)
     {
         CertificateMetadata metadata;

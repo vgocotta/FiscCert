@@ -1,0 +1,99 @@
+﻿@page "/"
+@page "/certificados"
+@using FiscCert.Web.Models
+@inject HttpClient Http
+
+<PageTitle>Meus Certificados</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>Certificados Cadastrados</h3>
+    <a href="/upload" class="btn btn-success">+ Novo Certificado</a>
+</div>
+<hr />
+
+@if (certificates == null)
+{
+    <div class="d-flex justify-content-center mt-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+    </div>
+}
+else if (!certificates.Any())
+{
+    <div class="alert alert-warning">Nenhum certificado encontrado para este Usuário.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Empresa</th>
+                    <th>CNPJ / CPF</th>
+                    <th>Vencimento</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cert in certificates)
+                {
+                    <tr>
+                        <td class="fw-bold">@cert.OwnerName</td>
+                        <td>@FormatDocument(cert.FederalInscription)</td>
+                        <td>@cert.ExpirationDate.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            @if (cert.IsRevoked)
+                            {
+                                <span class="badge bg-danger">Revogado</span>
+                            }
+                            else if (cert.ExpirationDate < DateTime.UtcNow)
+                            {
+                                <span class="badge bg-warning text-dark">Vencido</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Ativo</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<CertificateDto>? certificates;
+
+    // Usando o mesmo Guid fake do upload para testar
+    private readonly string tenantId = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // O Blazor faz o GET e já converte o JSON para a nossa lista de objetos magicamente
+            certificates = await Http.GetFromJsonAsync<List<CertificateDto>>($"/api/certificates?tenantId={tenantId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao buscar certificados: {ex.Message}");
+        }
+    }
+
+    private string FormatDocument(string document)
+    {
+        if (string.IsNullOrWhiteSpace(document)) return string.Empty;
+
+        // Formatação para CPF (11 dígitos)
+        if (document.Length == 11)
+            return $"{document.Substring(0, 3)}.{document.Substring(3, 3)}.{document.Substring(6, 3)}-{document.Substring(9, 2)}";
+
+        // Formatação para CNPJ (14 dígitos)
+        if (document.Length == 14)
+            return $"{document.Substring(0, 2)}.{document.Substring(2, 3)}.{document.Substring(5, 3)}/{document.Substring(8, 4)}-{document.Substring(12, 2)}";
+
+        return document; // Se tiver um tamanho diferente por algum motivo, retorna como está
+    }
+}

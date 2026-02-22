@@ -17,6 +17,20 @@ public class CertificatesController : ControllerBase
         _certificateService = certificateService;
     }
 
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll([FromQuery] Guid tenantId, CancellationToken cancellationToken)
+    {
+        if (tenantId == Guid.Empty)
+        {
+            return BadRequest(new { Error = "Não foi possível identificar o usuário desta solicitação, contate o suporte." });
+        }
+
+        var certificates = await _certificateService.GetCertificatesAsync(tenantId, cancellationToken);
+
+        return Ok(certificates);
+    }
+
     [HttpPost("upload")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Upload([FromForm] UploadCertificateRequest request, CancellationToken cancellationToken)
