@@ -68,7 +68,23 @@ public class CertificatesController : ControllerBase
             return StatusCode(500, new { Error = "Erro interno ao processar o certificado.", Detalhe = ex.Message });
         }
     }
-    
+
+    [HttpGet("{id:guid}/download")]
+    public async Task<IActionResult> Download([FromRoute] Guid id, [FromQuery] Guid tenantId, CancellationToken cancellationToken)
+    {
+        if (tenantId == Guid.Empty) return BadRequest(new { Error = "TenantId obrigatório." });
+
+        try
+        {
+            var result = await _certificateService.DownloadCertificateAsync(id, tenantId, cancellationToken);
+
+            return File(result.Content, "application/x-pkcs12", result.FileName);
+        }
+        catch (FileNotFoundException)
+        {
+            return NotFound(new { Error = "Arquivo físico não encontrado no servidor." });
+        }
+    }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id, [FromQuery] Guid tenantId, CancellationToken cancellationToken)

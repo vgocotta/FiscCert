@@ -7,4 +7,6 @@ public interface IStorageService
     Task<Stream> DownloadAsync(string blobPath, CancellationToken cancellationToken = default);
 
     Task DeleteFileAsync(string blobPath, CancellationToken cancellationToken);
+
+    Task<byte[]> GetFileAsync(string blobPath, CancellationToken cancellationToken);
 }

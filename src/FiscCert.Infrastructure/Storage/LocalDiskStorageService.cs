@@ -56,4 +56,16 @@ public class LocalDiskStorageService : IStorageService
 
         return Task.CompletedTask;
     }
+
+    public async Task<byte[]> GetFileAsync(string blobPath, CancellationToken cancellationToken)
+    {
+        var filePath = Path.Combine(_basePath, blobPath);
+
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException("File not found in server.");
+        }
+
+        return await File.ReadAllBytesAsync(filePath, cancellationToken);
+    }
 }

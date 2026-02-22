@@ -8,4 +8,6 @@ public interface ICertificateService
     Task<IEnumerable<CertificateDto>> GetCertificatesAsync(Guid tenantId, CancellationToken cancellationToken);
     Task<string> GetCertificatePasswordAsync(Guid id, Guid tenantId, CancellationToken cancellationToken);
     Task DeleteCertificateAsync(Guid id, Guid tenantId, CancellationToken cancellationToken);
+
+    Task<(byte[] Content, string FileName)> DownloadCertificateAsync(Guid id, Guid tenantId, CancellationToken cancellationToken);
 }

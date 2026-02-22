@@ -103,4 +103,22 @@ public class CertificateService : ICertificateService
 
         await _repository.DeleteAsync(certificate, cancellationToken);
     }
+
+    public async Task<(byte[] Content, string FileName)> DownloadCertificateAsync(Guid id, Guid tenantId, CancellationToken cancellationToken)
+    {
+        var certificate = await _repository.GetByIdAsync(id, cancellationToken);
+
+        if (certificate == null || certificate.TenantId != tenantId)
+        {
+            throw new Exception("Certificado não encontrado ou acesso negado.");
+        }
+
+        var content = await _storageService.GetFileAsync(certificate.BlobPath, cancellationToken);
+
+        // Remove espaços e caracteres especiais do nome da empresa para montar um nome de arquivo limpo
+        var safeOwnerName = string.Join("_", certificate.OwnerName.Split(Path.GetInvalidFileNameChars()));
+        var fileName = $"{safeOwnerName}.pfx";
+
+        return (content, fileName);
+    }
 }
