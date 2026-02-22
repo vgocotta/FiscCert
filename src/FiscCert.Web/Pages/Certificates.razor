@@ -2,6 +2,7 @@
 @page "/certificados"
 @using FiscCert.Web.Models
 @inject HttpClient Http
+@inject IJSRuntime JS
 
 <PageTitle>Meus Certificados</PageTitle>
 
@@ -29,10 +30,12 @@ else
         <table class="table table-striped table-hover align-middle">
             <thead class="table-dark">
                 <tr>
-                    <th>Empresa</th>
+                    <th>Proprietário</th>
                     <th>CNPJ / CPF</th>
                     <th>Vencimento</th>
                     <th>Status</th>
+                    <th>Senha</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -56,6 +59,32 @@ else
                                 <span class="badge bg-success">Ativo</span>
                             }
                         </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                @if (isLoadingPassword.ContainsKey(cert.Id) && isLoadingPassword[cert.Id])
+                                {
+                                    <span class="spinner-border spinner-border-sm text-primary me-2" role="status"></span>
+                                }
+                                else
+                                {
+                                    var isVisible = passwordVisibility.ContainsKey(cert.Id) && passwordVisibility[cert.Id];
+                                    var pwd = fetchedPasswords.ContainsKey(cert.Id) ? fetchedPasswords[cert.Id] : "";
+
+                                    <span class="font-monospace me-2" style="min-width: 80px; display: inline-block;">
+                                        @(isVisible? pwd : "••••••••")
+                                    </span>
+
+                                    <button class="btn btn-sm text-primary p-0 border-0 bg-transparent" @onclick="() => TogglePassword(cert.Id)" title="@(isVisible ? "Esconder Senha" : "Mostrar Senha")">
+                                        <i class="bi @(isVisible ? "bi-eye-slash-fill" : "bi-eye-fill") fs-5"></i>
+                                    </button>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm text-danger p-0 border-0 bg-transparent" @onclick="() => DeleteCertificate(cert.Id)" title="Excluir Certificado">
+                                <i class="bi bi-trash-fill fs-5"></i>
+                            </button>
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -69,11 +98,20 @@ else
     // Usando o mesmo Guid fake do upload para testar
     private readonly string tenantId = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
 
+
+    private Dictionary<Guid, bool> passwordVisibility = new();
+    private Dictionary<Guid, bool> isLoadingPassword = new();
+    private Dictionary<Guid, string> fetchedPasswords = new();
+
     protected override async Task OnInitializedAsync()
+    {
+        await LoadCertificates();
+    }
+
+    private async Task LoadCertificates()
     {
         try
         {
-            // O Blazor faz o GET e já converte o JSON para a nossa lista de objetos magicamente
             certificates = await Http.GetFromJsonAsync<List<CertificateDto>>($"/api/certificates?tenantId={tenantId}");
         }
         catch (Exception ex)
@@ -86,14 +124,70 @@ else
     {
         if (string.IsNullOrWhiteSpace(document)) return string.Empty;
 
-        // Formatação para CPF (11 dígitos)
         if (document.Length == 11)
             return $"{document.Substring(0, 3)}.{document.Substring(3, 3)}.{document.Substring(6, 3)}-{document.Substring(9, 2)}";
 
-        // Formatação para CNPJ (14 dígitos)
         if (document.Length == 14)
             return $"{document.Substring(0, 2)}.{document.Substring(2, 3)}.{document.Substring(5, 3)}/{document.Substring(8, 4)}-{document.Substring(12, 2)}";
 
-        return document; // Se tiver um tamanho diferente por algum motivo, retorna como está
+        return document;
     }
+
+    private async Task TogglePassword(Guid id)
+    {
+        if (passwordVisibility.ContainsKey(id) && passwordVisibility[id])
+        {
+            passwordVisibility[id] = false;
+            return;
+        }
+
+        if (!fetchedPasswords.ContainsKey(id))
+        {
+            isLoadingPassword[id] = true;
+            StateHasChanged();
+
+            try
+            {
+                var response = await Http.GetFromJsonAsync<PasswordResponseDto>($"/api/certificates/{id}/password?tenantId={tenantId}");
+                if (response != null)
+                {
+                    fetchedPasswords[id] = response.Password;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao buscar senha: {ex.Message}");
+            }
+            finally
+            {
+                isLoadingPassword[id] = false;
+            }
+        }
+
+        passwordVisibility[id] = true;
+    }
+
+    private async Task DeleteCertificate(Guid id)
+    {
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", "Tem a certeza que deseja excluir este certificado permanentemente? Esta ação não pode ser desfeita.");
+        if (!confirmed) return;
+
+        try
+        {
+            var response = await Http.DeleteAsync($"/api/certificates/{id}?tenantId={tenantId}");
+            if (response.IsSuccessStatusCode)
+            {
+                certificates?.RemoveAll(c => c.Id == id);
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Erro ao excluir o certificado. Verifique os logs.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao excluir: {ex.Message}");
+        }
+    }
+
 }
