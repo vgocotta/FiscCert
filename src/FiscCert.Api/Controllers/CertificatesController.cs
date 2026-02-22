@@ -19,14 +19,14 @@ public class CertificatesController : ControllerBase
 
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] Guid tenantId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll([FromQuery] Guid tenantId, [FromQuery] string? searchTerm, [FromQuery] string? orderBy, CancellationToken cancellationToken)
     {
         if (tenantId == Guid.Empty)
         {
             return BadRequest(new { Error = "Não foi possível identificar o usuário desta solicitação, contate o suporte." });
         }
 
-        var certificates = await _certificateService.GetCertificatesAsync(tenantId, cancellationToken);
+        var certificates = await _certificateService.GetCertificatesAsync(tenantId, searchTerm, orderBy, cancellationToken);
 
         return Ok(certificates);
     }

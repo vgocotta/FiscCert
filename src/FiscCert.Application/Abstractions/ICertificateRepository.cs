@@ -10,4 +10,5 @@ public interface ICertificateRepository
 
     Task<Certificate?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IEnumerable<Certificate>> GetAllByTenantAsync(Guid tenantId, CancellationToken cancellationToken = default);
+    Task<List<Certificate>> GetFilteredAndSortedAsync(Guid tenantId, string? searchTerm, string? orderBy, CancellationToken cancellationToken);
 }

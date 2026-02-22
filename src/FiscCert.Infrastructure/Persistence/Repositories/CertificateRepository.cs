@@ -42,6 +42,32 @@ public class CertificateRepository : ICertificateRepository
         return await _dbContext.Certificates
             .AsNoTracking()
             .Where(c => c.TenantId == tenantId)
+            .OrderByDescending(c => c.IsRevoked)
+            .ThenBy(c => c.ExpirationDate)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<Certificate>> GetFilteredAndSortedAsync(Guid tenantId, string? searchTerm, string? orderBy, CancellationToken cancellationToken)
+    {
+        var query = _dbContext.Certificates.AsNoTracking()
+            .Where(c => c.TenantId == tenantId);
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.ToLower();
+
+            query = query.Where(c =>
+                c.OwnerName.ToLower().Contains(term) ||
+                c.FederalInscription.Contains(searchTerm));
+        }
+
+        query = orderBy switch
+        {
+            "name" => query.OrderByDescending(c => c.IsRevoked).ThenBy(c => c.OwnerName),
+            "expiration_desc" => query.OrderByDescending(c => c.IsRevoked).ThenByDescending(c => c.ExpirationDate),
+            _ => query.OrderByDescending(c => c.IsRevoked).ThenBy(c => c.ExpirationDate)
+        };
+
+        return await query.ToListAsync(cancellationToken);
     }
 }

@@ -38,6 +38,19 @@ public class CertificateService : ICertificateService
         return dtos;
     }
 
+    public async Task<List<CertificateDto>> GetCertificatesAsync(Guid tenantId, string? searchTerm, string? orderBy, CancellationToken cancellationToken)
+    {
+        var certificates = await _repository.GetFilteredAndSortedAsync(tenantId, searchTerm, orderBy, cancellationToken);
+
+        return [.. certificates.Select(c => new CertificateDto(
+            c.Id,
+            c.OwnerName,
+            c.FederalInscription,
+            c.ExpirationDate,
+            c.IsRevoked
+        ))];
+    }
+
     public async Task<Guid> UploadCertificateAsync(UploadCertificateDto input, CancellationToken cancellationToken = default)
     {
         CertificateMetadata metadata;
