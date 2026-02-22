@@ -14,7 +14,10 @@ public sealed class Certificate : Entity
     public string SerialNumber { get; private set; } = null!;
 
     public DateTime ExpirationDate { get; private set; }
+
     public bool IsRevoked { get; private set; }
+
+    public string EncryptedPassword { get; private set; }
 
     private readonly List<RepresentedCompany> _representedCompanies = [];
     public IReadOnlyCollection<RepresentedCompany> RepresentedCompanies => _representedCompanies.AsReadOnly();
@@ -29,6 +32,7 @@ public sealed class Certificate : Entity
         string federalInscription,
         string serialNumber,
         DateTime expirationDate,
+        string encryptedPassword,
         Guid? economicGroupId = null)
         : base(tenantId)
     {
@@ -45,6 +49,7 @@ public sealed class Certificate : Entity
         SerialNumber = serialNumber;
         ExpirationDate = expirationDate;
         IsRevoked = false;
+        EncryptedPassword = encryptedPassword;
     }
 
     public void AssignToEconomicGroup(Guid groupId)

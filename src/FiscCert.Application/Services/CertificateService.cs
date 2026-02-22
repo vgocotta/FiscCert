@@ -12,12 +12,14 @@ public class CertificateService : ICertificateService
     private readonly ICertificateRepository _repository;
     private readonly IStorageService _storageService;
     private readonly ICertificateReader _certificateReader;
+    private readonly IEncryptionService _encryptionService;
 
-    public CertificateService(ICertificateRepository repository, IStorageService storageService, ICertificateReader certificateReader)
+    public CertificateService(ICertificateRepository repository, IStorageService storageService, ICertificateReader certificateReader, IEncryptionService encryptionService)
     {
         _repository = repository;
         _storageService = storageService;
         _certificateReader = certificateReader;
+        _encryptionService = encryptionService;
     }
 
     public async Task<IEnumerable<CertificateDto>> GetCertificatesAsync(Guid tenantId, CancellationToken cancellationToken)
@@ -51,7 +53,18 @@ public class CertificateService : ICertificateService
         var certificateId = Guid.NewGuid();
         var blobName = $"{input.TenantId}/{certificateId}.pfx";
 
-        Certificate certificate = new(certificateId, input.TenantId, blobName, metadata.OwnerName, metadata.FederalInscription, metadata.SerialNumber, metadata.ExpirationDate, input.EconomicGroupId);
+        var encryptedPassword = _encryptionService.Encrypt(input.Password);
+
+        Certificate certificate = new(
+            certificateId,
+            input.TenantId,
+            blobName,
+            metadata.OwnerName,
+            metadata.FederalInscription,
+            metadata.SerialNumber,
+            metadata.ExpirationDate,
+            encryptedPassword,
+            input.EconomicGroupId);
 
         if (input.FileStream.CanSeek)
         {

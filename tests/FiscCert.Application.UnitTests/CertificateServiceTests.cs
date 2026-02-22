@@ -14,6 +14,7 @@ public class CertificateServiceTests
     private readonly Mock<ICertificateRepository> _repositoryMock;
     private readonly Mock<IStorageService> _storageServiceMock;
     private readonly Mock<ICertificateReader> _certificateReaderMock;
+    private readonly Mock<IEncryptionService> _encryptionServiceMock;
     private readonly CertificateService _sut;
 
     public CertificateServiceTests()
@@ -21,11 +22,13 @@ public class CertificateServiceTests
         _repositoryMock = new Mock<ICertificateRepository>();
         _storageServiceMock = new Mock<IStorageService>();
         _certificateReaderMock = new Mock<ICertificateReader>();
+        _encryptionServiceMock = new Mock<IEncryptionService>();
 
         _sut = new CertificateService(
             _repositoryMock.Object,
             _storageServiceMock.Object,
-            _certificateReaderMock.Object);
+            _certificateReaderMock.Object,
+            _encryptionServiceMock.Object);
     }
 
     [Fact]

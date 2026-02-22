@@ -41,6 +41,10 @@ public class CertificateConfiguration : IEntityTypeConfiguration<Certificate>
         builder.Property(c => c.EconomicGroupId)
             .IsRequired(false);
 
+        builder.Property(c => c.EncryptedPassword)
+           .IsRequired(true)
+           .HasMaxLength(500);
+
         builder.Ignore(c => c.RepresentedCompanies);
     }
 }
