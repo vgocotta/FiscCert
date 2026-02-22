@@ -32,6 +32,7 @@ public class CertificateRepositoryTests
             "12345678000199",
             "SERIAL123",
             DateTime.UtcNow.AddYears(1),
+            "password",
             null);
 
         // Act

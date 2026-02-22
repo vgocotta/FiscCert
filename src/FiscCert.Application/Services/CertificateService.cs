@@ -77,4 +77,30 @@ public class CertificateService : ICertificateService
 
         return certificate.Id;
     }
+
+    public async Task<string> GetCertificatePasswordAsync(Guid id, Guid tenantId, CancellationToken cancellationToken)
+    {
+        var certificate = await _repository.GetByIdAsync(id, cancellationToken);
+
+        if (certificate == null || certificate.TenantId != tenantId)
+        {
+            throw new Exception("Certificado não encontrado ou acesso negado.");
+        }
+
+        return _encryptionService.Decrypt(certificate.EncryptedPassword);
+    }
+
+    public async Task DeleteCertificateAsync(Guid id, Guid tenantId, CancellationToken cancellationToken)
+    {
+        var certificate = await _repository.GetByIdAsync(id, cancellationToken);
+
+        if (certificate == null || certificate.TenantId != tenantId)
+        {
+            throw new Exception("Certificado não encontrado ou acesso negado.");
+        }
+
+        await _storageService.DeleteFileAsync(certificate.BlobPath, cancellationToken);
+
+        await _repository.DeleteAsync(certificate, cancellationToken);
+    }
 }

@@ -31,6 +31,16 @@ public class CertificatesController : ControllerBase
         return Ok(certificates);
     }
 
+    [HttpGet("{id:guid}/password")]
+    public async Task<IActionResult> GetPassword([FromRoute] Guid id, [FromQuery] Guid tenantId, CancellationToken cancellationToken)
+    {
+        if (tenantId == Guid.Empty) return BadRequest(new { Error = "Usuário é obrigatório." });
+
+        var password = await _certificateService.GetCertificatePasswordAsync(id, tenantId, cancellationToken);
+
+        return Ok(new { Password = password });
+    }
+
     [HttpPost("upload")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Upload([FromForm] UploadCertificateRequest request, CancellationToken cancellationToken)
@@ -57,6 +67,17 @@ public class CertificatesController : ControllerBase
         {
             return StatusCode(500, new { Error = "Erro interno ao processar o certificado.", Detalhe = ex.Message });
         }
+    }
+    
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete([FromRoute] Guid id, [FromQuery] Guid tenantId, CancellationToken cancellationToken)
+    {
+        if (tenantId == Guid.Empty) return BadRequest(new { Error = "TenantId obrigatório." });
+
+        await _certificateService.DeleteCertificateAsync(id, tenantId, cancellationToken);
+
+        return NoContent();
     }
 }
 

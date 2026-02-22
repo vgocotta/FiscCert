@@ -44,4 +44,16 @@ public class LocalDiskStorageService : IStorageService
 
         return blobPath;
     }
+
+    public Task DeleteFileAsync(string blobPath, CancellationToken cancellationToken)
+    {
+        var filePath = Path.Combine(_basePath, blobPath);
+
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+        }
+
+        return Task.CompletedTask;
+    }
 }

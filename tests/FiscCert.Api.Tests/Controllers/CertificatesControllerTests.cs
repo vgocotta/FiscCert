@@ -70,4 +70,44 @@ public class CertificatesControllerTests
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
         Assert.NotNull(badRequestResult.Value);
     }
+
+    [Fact]
+    public async Task GetPassword_ShouldReturnOkWithPassword_WhenSuccessful()
+    {
+        // Arrange
+        var certId = Guid.NewGuid();
+        var tenantId = Guid.NewGuid();
+        var expectedPassword = "senha_descriptografada";
+
+        _certificateServiceMock.Setup(s => s.GetCertificatePasswordAsync(certId, tenantId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedPassword);
+
+        // Act
+        var result = await _sut.GetPassword(certId, tenantId, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+
+        var value = okResult.Value;
+        var passwordProperty = value?.GetType().GetProperty("Password")?.GetValue(value, null);
+
+        Assert.Equal(expectedPassword, passwordProperty);
+    }
+
+    [Fact]
+    public async Task Delete_ShouldReturnNoContent_WhenSuccessful()
+    {
+        // Arrange
+        var certId = Guid.NewGuid();
+        var tenantId = Guid.NewGuid();
+
+        _certificateServiceMock.Setup(s => s.DeleteCertificateAsync(certId, tenantId, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _sut.Delete(certId, tenantId, CancellationToken.None);
+
+        // Assert
+        Assert.IsType<NoContentResult>(result);
+    }
 }

@@ -21,6 +21,13 @@ public class CertificateRepository : ICertificateRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task DeleteAsync(Certificate certificate, CancellationToken cancellationToken = default)
+    {
+        _dbContext.Certificates.Remove(certificate);
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<Certificate?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Certificates

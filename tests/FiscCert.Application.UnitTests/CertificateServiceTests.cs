@@ -94,4 +94,50 @@ public class CertificateServiceTests
         _storageServiceMock.Verify(s => s.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         _repositoryMock.Verify(r => r.AddAsync(It.IsAny<Certificate>(), It.IsAny<CancellationToken>()), Times.Never);
     }
+
+    [Fact]
+    public async Task GetCertificatePasswordAsync_ShouldReturnDecryptedPassword_WhenCertificateExists()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var certId = Guid.NewGuid();
+        var encryptedPassword = "senha_criptografada_fake";
+        var expectedPassword = "senha_real_123";
+
+        var certificate = new Certificate(certId, tenantId, "path.pfx", "Empresa X", "12345678901234", "123", DateTime.UtcNow.AddYears(1), encryptedPassword, null);
+
+        _repositoryMock.Setup(r => r.GetByIdAsync(certId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(certificate);
+
+        _encryptionServiceMock.Setup(e => e.Decrypt(encryptedPassword))
+            .Returns(expectedPassword);
+
+        // Act
+        var result = await _sut.GetCertificatePasswordAsync(certId, tenantId, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(expectedPassword, result);
+        _encryptionServiceMock.Verify(e => e.Decrypt(encryptedPassword), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteCertificateAsync_ShouldDeleteFileAndRecord_WhenValid()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var certId = Guid.NewGuid();
+        var blobPath = "path/to/file.pfx";
+
+        var certificate = new Certificate(certId, tenantId, blobPath, "Empresa X", "123", "123", DateTime.UtcNow, "enc_pass", null);
+
+        _repositoryMock.Setup(r => r.GetByIdAsync(certId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(certificate);
+
+        // Act
+        await _sut.DeleteCertificateAsync(certId, tenantId, CancellationToken.None);
+
+        // Assert
+        _storageServiceMock.Verify(s => s.DeleteFileAsync(blobPath, It.IsAny<CancellationToken>()), Times.Once);
+        _repositoryMock.Verify(r => r.DeleteAsync(certificate, It.IsAny<CancellationToken>()), Times.Once);
+    }
 }
